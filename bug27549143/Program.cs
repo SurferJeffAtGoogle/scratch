@@ -46,7 +46,8 @@ Errors [
             var credentials = Google.Apis.Auth.OAuth2.GoogleCredential
                 .GetApplicationDefaultAsync().Result;
             credentials = credentials.CreateScoped(new[] {
-                DatastoreService.Scope.Datastore
+                DatastoreService.Scope.Datastore,
+                DatastoreService.Scope.UserinfoEmail,
             });
             // Create our connection to datastore.
             var datastore = new DatastoreService(new Google.Apis.Services
