@@ -22,7 +22,7 @@ namespace bug27549143
     {
         private static void Main(string[] args)
         {
-            var projectId = args[1];
+            var projectId = args[0];
             // Use Application Default Credentials.
             var credentials = Google.Apis.Auth.OAuth2.GoogleCredential
                 .GetApplicationDefaultAsync().Result;
