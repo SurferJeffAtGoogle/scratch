@@ -20,8 +20,27 @@ namespace bug27549143
 {
     internal class Program
     {
+        static readonly string _usage = @"Usage:
+    {0} google-project-id
+
+Attempts to read some entities from datastore.
+
+When I set GOOGLE_APPLICATION_CREDENTIALS to my downloaded service account .json file,
+I get the following error:
+
+Unhandled Exception: Google.GoogleApiException: Google.Apis.Requests.RequestError
+Invalid Credentials [401]
+Errors [
+        Message[Invalid Credentials] Location[Authorization - header] Reason[authError] Domain[global]
+]";
         private static void Main(string[] args)
         {
+            if (args.Length < 1)
+            {
+                string binPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                Console.WriteLine(String.Format(_usage, System.IO.Path.GetFileName(binPath)));
+                return;
+            }
             var projectId = args[0];
             // Use Application Default Credentials.
             var credentials = Google.Apis.Auth.OAuth2.GoogleCredential
