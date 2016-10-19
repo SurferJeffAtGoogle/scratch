@@ -14,6 +14,7 @@
 using Google.Apis.Pubsub.v1;
 using Google.Apis.Pubsub.v1.Data;
 using Google.Apis.Services;
+using Google.Datastore.V1;
 using System;
 
 namespace PubSubDemo
@@ -22,17 +23,17 @@ namespace PubSubDemo
     {
         static void Main(string[] args)
         {
-            PubsubService pubsub;
             string projectId = "bookshelf-dotnet";
             string topicName = "book-process-queue";
             string topicPath = $"projects/{projectId}/topics/{topicName}";
+            var db = DatastoreDb.Create(projectId);
             var credentials = Google.Apis.Auth.OAuth2.GoogleCredential.
                 GetApplicationDefaultAsync().Result;
             if (credentials.IsCreateScopedRequired)
             {
                 credentials = credentials.CreateScoped(new[] { PubsubService.Scope.Pubsub });
             }
-            pubsub = new PubsubService(new BaseClientService.Initializer()
+            PubsubService pubsub = new PubsubService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credentials,
             });
