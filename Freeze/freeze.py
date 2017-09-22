@@ -19,6 +19,7 @@ import django
 from pprint import pprint
 import sys
 import subprocess
+import StringIO
 
 TEMPLATES = [
     {
@@ -48,13 +49,15 @@ def update_includes(template_string, template_out, repo_map):
         include_node = to_include_node(token)
         if include_node:
             project = include_node.extra_context.get("project")
-            if project in repo_map:
+            project_name = project and project.var or None
+            if project_name in repo_map:
                 # Update the include's branch statement.
-                branch = repo_map[project]
+                branch = repo_map[project_name]
                 if not branch:
-                    del include_node.extra_content["branch"]
+                    del include_node.extra_context["branch"]
                 else:
-                    include_node.extra_content["branch"] = branch
+                    include_node.extra_context["branch"] = \
+                        dtbase.FilterExpression(branch, dtbase.Parser([]))
                 text = reconstruct_include_node(include_node)
         template_out.write(text)
         
@@ -101,6 +104,7 @@ def reconstruct_include_node(node):
 
 
 def open_for_write(path):
+    """Tries to g4 edit a file if permission is denied."""
     try:       
         return open(path, 'wb')
     except IOError, e:
@@ -115,8 +119,12 @@ def main():
     for path in sys.argv[1:]:
         with open(path, 'rb') as f:
             text = f.read()
+        out_buffer = StringIO.StringIO()
+        update_includes(text, out_buffer, 
+            {'dotnet-docs-samples': 'ad3bda4b2d5fc47f3b1fb131c4d1f4323ab00db5'})
         with open_for_write(path) as out:
-            update_includes(text, out, {})
+            out.write(out_buffer.getvalue())
+            
 
 if __name__ == '__main__':
     main()
