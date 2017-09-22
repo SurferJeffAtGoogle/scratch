@@ -1,15 +1,14 @@
 # Hello
-from django.template.base import Template
-from django.template.engine import Engine
+from django.template.base import DebugLexer
 from pprint import pprint
 
 def main():
-    engine = Engine()
-    engine.debug = True
-    t = Template("Hello World", engine=engine)
-    nodelist = t.compile_nodelist()
-    pprint(nodelist)
-    help(nodelist[0])
+    s = ('<html>{% if test %}<h1>{{ varvalue }}</h1>{% endif %}\n'
+        + '{% include "another_template.html" with a="b" and c="d" %}'
+        +  '</html>')
+    lexer = DebugLexer(s)
+    for token in lexer.tokenize():
+        pprint(vars(token))
 
 if __name__ == '__main__':
     main()
