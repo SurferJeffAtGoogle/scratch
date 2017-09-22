@@ -18,7 +18,8 @@
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",
                 "RedirectOutput"
-            ]
+            ],
+            "args": ["/google/src/cloud/rennie/clean/google3/googledata/devsite/site-cloud/en/appengine/docs/flexible/_shared/_using-cloud-sql.md"]
         },
         {
             "name": "PySpark",

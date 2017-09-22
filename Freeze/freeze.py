@@ -18,7 +18,7 @@ from django.conf import settings
 import django
 from pprint import pprint
 import sys
-
+import subprocess
 
 TEMPLATES = [
     {
@@ -100,10 +100,23 @@ def reconstruct_include_node(node):
         return '{%% include %s %%}' % node.template.token
 
 
-if __name__ == '__main__':
+def open_for_write(path):
+    try:       
+        return open(path, 'wb')
+    except IOError, e:
+        if e.errno == 13:  # Permission denied
+            subprocess.check_call(['g4', 'edit', path])
+            return open(path, 'wb')
+        else:
+            raise
+
+
+def main():
     for path in sys.argv[1:]:
         with open(path, 'rb') as f:
             text = f.read()
-        with open(path, 'wb') as out:
+        with open_for_write(path) as out:
             update_includes(text, out, {})
 
+if __name__ == '__main__':
+    main()
