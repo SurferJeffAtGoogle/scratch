@@ -29,41 +29,54 @@ settings.configure(TEMPLATES=TEMPLATES)
 django.setup()    
 
 
-def main():
-    s = ('<html>{% if test %}<h1>{{ varvalue }}</h1>{% endif %}\n'
-        + '{% include "another_template.html" with project="foo" file="/hello.cs" %}'
-        + '</html>\n'
-        + '{# cheesy #}\n'
-        + '{% comment %}\n'
-        + 'You need a new hairstyle.\n'
-        + '{% endcomment %}\n')
-    # path = sys.argv[1]
-    # s = open(path, 'rb').read()
-    lexer = DebugLexer(s)
+def update_includes(template_string, template_out, repo_map):
+    """Modifies a template and sets branch parameters for include blocks.
+
+    Args:
+        template_string (string):  The django template string.abs
+        template_out (file):  The destination to write the modified template.
+        repo_map (dict):  Maps repos to the branch to freeze them to.  Example:
+           {
+               'dotnet-docs-samples': 'ad3bda4b2d5fc47f3b1fb131c4d1f4323ab00db5',
+               'nodejs-docs-samples': None  # Means remove branch= parameter.
+           }
+    """
+    lexer = DebugLexer(template_string)
     tokens = lexer.tokenize()
-    if False:
-        for token in tokens:
-            pprint(vars(token))
-            pprint(token.split_contents())
-        print
-    engine = dtengine.Engine.get_default()
     for token in tokens:
         text = reconstruct_token(token)
-        if token.token_type == dtbase.TOKEN_BLOCK:
-            command = token.contents.split()[0]
-            if command == 'include':
-                try:
-                    parser = dtbase.Parser([token], engine.template_libraries, 
-                        engine.template_builtins, dtbase.Origin(text))
-                    nodelist = parser.parse()
-                    text = reconstruct_include_node(nodelist[0])
-                except django.template.exceptions.TemplateSyntaxError, e:
-                    # Unbalanced if, elif, etc.  The only blacks we're interested in
-                    # need no balancing.
-                    pass
-        sys.stdout.write(text)
+        include_node = to_include_node(token)
+        if include_node:
+            project = include_node.extra_context.get("project")
+            if project in repo_map:
+                # Update the include's branch statement.
+                branch = repo_map[project]
+                if not branch:
+                    del include_node.extra_content["branch"]
+                else:
+                    include_node.extra_content["branch"] = branch
+                text = reconstruct_include_node(include_node)
+        template_out.write(text)
         
 
+def to_include_node(token):    
+    """Returns a dtbase.Node if this token represents an include node.
+
+    Args:
+        token (dtbase.Token): The token to examine.
+
+    Returns:
+        dtbase.Node: An IncludeNode for the token, or None is token is not
+            an include node.
+    """
+    engine = dtengine.Engine.get_default()
+    if token.token_type == dtbase.TOKEN_BLOCK:
+        command = token.contents.split()[0]
+        if command == 'include':
+            parser = dtbase.Parser([token], engine.template_libraries, 
+                engine.template_builtins, dtbase.Origin(token.contents))
+            nodelist = parser.parse()
+            return nodelist[0]
 
     
 def reconstruct_token(token):
@@ -73,12 +86,24 @@ def reconstruct_token(token):
     # TOKEN_BLOCK = 2
     # TOKEN_COMMENT = 3
     formats = ['%s', '{{%s}}', '{%% %s %%}', '{# %s #}']
-    return formats[token.token_type] % token.contents 
+    return formats[token.token_type] % token.contents
+
 
 def reconstruct_include_node(node):
-    extra_context = " ".join(["%s=%s" % (item[0], item[1].token) 
+    """Given an include node, reconstruct the original text."""
+    extra_context = " ".join(["%s=%s" % (item[0], item[1].token)
             for item in node.extra_context.viewitems()])
-    return '{%% include %s %s %%}' % (node.template.token, extra_context)
+    if extra_context:
+        return '{%% include %s with %s %%}' % (
+            node.template.token, extra_context)
+    else:
+        return '{%% include %s %%}' % node.template.token
+
 
 if __name__ == '__main__':
-    main()
+    for path in sys.argv[1:]:
+        with open(path, 'rb') as f:
+            text = f.read()
+        with open(path, 'wb') as out:
+            update_includes(text, out, {})
+
