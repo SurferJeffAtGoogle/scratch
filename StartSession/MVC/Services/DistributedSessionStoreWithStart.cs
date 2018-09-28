@@ -27,11 +27,13 @@ public class DistributedSessionStoreWithStart : ISessionStore
 {
     DistributedSessionStore innerStore;
     IStartSession startSession;
+    ILogger<DistributedSessionStoreWithStart> logger;
     public DistributedSessionStoreWithStart(IDistributedCache cache, 
         ILoggerFactory loggerFactory, IStartSession startSession)
     {
         innerStore = new DistributedSessionStore(cache, loggerFactory);
         this.startSession = startSession;
+        logger = loggerFactory.CreateLogger<DistributedSessionStoreWithStart>();
     }
 
     public ISession Create(string sessionKey, TimeSpan idleTimeout, 
@@ -42,6 +44,7 @@ public class DistributedSessionStoreWithStart : ISessionStore
              tryEstablishSession, isNewSessionKey);
         if (isNewSessionKey)
         {
+            logger.LogInformation("New session key {0}", sessionKey);
             startSession.StartSession(session);
         }
         return session;
