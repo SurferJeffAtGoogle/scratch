@@ -27,7 +27,7 @@ namespace MVC.Controllers
     {
         public IActionResult Index()
         {
-            string value = HttpContext.Session.GetString("PresetKey");
+            string value = HttpContext.Session.GetString("Hello");
             return View();
         }
 

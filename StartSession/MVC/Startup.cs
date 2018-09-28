@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Session;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,14 @@ using Newtonsoft.Json;
 
 namespace MVC
 {
+    class InitSession : IStartSession
+    {
+        public void StartSession(ISession session)
+        {
+            session.SetString("Hello", "World");
+        }
+    }
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -49,17 +58,8 @@ namespace MVC
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-
-            Func<byte[]> startSession = () => {
-                // Initialize the session.
-                var newSession = new { PresetKey = "value" };
-                string text = JsonConvert.SerializeObject(newSession); 
-                return Encoding.UTF8.GetBytes(text);
-            };
-            services.AddSingleton<IDistributedCache>(provider =>
-                new CacheWithStart(new MemoryDistributedCache(
-                    provider.GetService<IOptions<MemoryDistributedCacheOptions>>()),
-                    startSession));
+            services.AddSingleton<IStartSession, InitSession>();
+            services.AddSingleton<ISessionStore, DistributedSessionStoreWithStart>();
             services.AddSession();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
