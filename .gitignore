@@ -15,6 +15,7 @@ PublishProfiles/
 *~
 *.xproj.user
 project.lock.json
+<<<<<<< HEAD
 .vscode/
 secrets.ps1
 google_application_credentials.json
@@ -24,3 +25,4 @@ google_application_credentials.json
 /tmpB19A.tmp
 /dlp/tmp6849.tmp
 env/
+.vscode/
