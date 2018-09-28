@@ -31,7 +31,9 @@ public class CacheWithStart : IDistributedCache
     public byte[] Get(string key)
     {
         var value = InnerCache.Get(key);
-        return value == null ? Start() : value;
+        if (value == null)
+            value = Start();
+        return value;
     }
 
     public async Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken))

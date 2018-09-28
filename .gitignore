@@ -250,3 +250,5 @@ PublishProfiles/
 *.xproj.user
 project.lock.json
 env/
+
+.vscode/
