@@ -17,9 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Iam.v1;
 using Google.Apis.Iam.v1.Data;
+using Google.Cloud.Translation.V2;
+using Newtonsoft.Json;
 
 namespace StackOverflow53251345
 {
@@ -39,6 +42,17 @@ namespace StackOverflow53251345
             IList<ServiceAccountKey> serviceAccountKeys = ListKeysOfServiceAccount(userEmail);
 
             ServiceAccountKey newKey = CreateKeyOfServiceAccount(userEmail);
+
+            // Call the translate API with the new key.
+            byte[] jsonKey = Convert.FromBase64String(newKey.PrivateKeyData);
+            Stream jsonKeyStream = new MemoryStream(jsonKey);
+            ServiceAccountCredential credential = ServiceAccountCredential
+                .FromServiceAccountData(jsonKeyStream);
+            GoogleCredential googleCredential = GoogleCredential
+                .FromServiceAccountCredential(credential);
+            var client = TranslationClient.Create(googleCredential);
+            var response = client.TranslateText("Hello World", "ru");
+            Console.WriteLine(response.TranslatedText);           
 
             //DeleteKeyOfServiceAccount(newKey);
 
