@@ -11,5 +11,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under
 # the License.
-$env:My:Greeting = "Good day, Globe!"
+
+# The __ below should be replaced with a colon.
+$env:My__Greeting = "Good day, Globe!"
 dotnet run
