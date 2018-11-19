@@ -1,0 +1,5 @@
+runtime: aspnetcore
+env: flex
+
+env_variables:
+  'My:Greeting': Hello AppEngine!
