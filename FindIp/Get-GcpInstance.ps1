@@ -51,6 +51,7 @@ function Get-GcpInstance {
                 -PercentComplete (100 * $progress / $projectIds.Count) `
                 -CurrentOperation $projectId
             $progress += 1
+            gcloud sql instances list --project=$projectId --filter="PRIMARY_ADDRESS=$IpAddress"--format=json | convertfrom-json
             $instances = gcloud compute instances list -q --project=$projectId --format=json | ConvertFrom-Json
             foreach ($instance in $instances) {
                 foreach ($networkInterface in $instance.networkInterfaces) {
