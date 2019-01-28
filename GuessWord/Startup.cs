@@ -12,17 +12,20 @@
 // License for the specific language governing permissions and limitations under
 // the License.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Google.Apis.Auth.OAuth2;
+using GuessWord.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace GuessWord
 {
@@ -35,6 +38,30 @@ namespace GuessWord
 
         public IConfiguration Configuration { get; }
 
+        private readonly Lazy<string> _projectId = new Lazy<string>(() => GetProjectId());
+        
+        public string ProjectId
+        {
+            get { return _projectId.Value; }
+        }
+
+        private static string GetProjectId()
+        {
+            GoogleCredential googleCredential = Google.Apis.Auth.OAuth2
+                .GoogleCredential.GetApplicationDefault();
+            if (googleCredential != null)
+            {
+                ICredential credential = googleCredential.UnderlyingCredential;
+                ServiceAccountCredential serviceAccountCredential =
+                    credential as ServiceAccountCredential;
+                if (serviceAccountCredential != null)
+                {
+                    return serviceAccountCredential.ProjectId;
+                }
+            }
+            return Google.Api.Gax.Platform.Instance().ProjectId;
+        }
+        
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -49,6 +76,9 @@ namespace GuessWord
             services.Configure<Models.SecretWordOptions>(
                 Configuration.GetSection("SecretWord"));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddSingleton<IDataProtectionProvider>(serviceProvider =>
+                new KmsDataProtectionProvider(ProjectId, "global", "dataprotectionprovider"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
