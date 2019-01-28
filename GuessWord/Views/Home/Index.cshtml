@@ -7,6 +7,7 @@
     <div class="col-md-10">
         <h2>Guess the secret word.</h2>
         <form asp-controller="Home" asp-action="Index" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
             <label asp-for="Word">Enter your guess: </label>
             <input asp-for="Word" />
             <input type="submit">

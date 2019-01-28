@@ -5,14 +5,27 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using GuessWord.Models;
+using GuessWord.ViewModels;
 
 namespace GuessWord.Controllers
 {
     public class HomeController : Controller
     {
+        [HttpGet]
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Index(GuessModel model)
+        {
+            if (ModelState.IsValid) 
+            {
+
+            }
+            return View(model);
         }
 
         public IActionResult About()
