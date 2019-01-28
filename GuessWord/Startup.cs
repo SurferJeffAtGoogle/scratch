@@ -24,6 +24,7 @@ namespace GuessWord
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -31,7 +32,8 @@ namespace GuessWord
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-
+            services.Configure<Models.SecretWordOptions>(
+                Configuration.GetSection("SecretWord"));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 

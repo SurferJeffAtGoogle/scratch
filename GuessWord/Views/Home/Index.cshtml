@@ -8,8 +8,14 @@
         <h2>Guess the secret word.</h2>
         <form asp-controller="Home" asp-action="Index" method="post">
             <div asp-validation-summary="All" class="text-danger"></div>
+            @if (ViewData["guess"] == "right") {
+                <div class="text-success">That&#39;s right!</div>
+            }
+            else if (ViewData["guess"] == "wrong") {
+                <div class="text-primary">Nope! It&#39;s not @Model.Word.</div>
+            }
             <label asp-for="Word">Enter your guess: </label>
-            <input asp-for="Word" />
+            <input asp-for="Word" autofocus />
             <input type="submit">
         </form>        
     </div>
