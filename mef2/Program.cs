@@ -37,11 +37,8 @@ class Program
     private static CompositionHost CreateCompositionContainer()
     {
         var assemblies = new[] { typeof(Program).GetTypeInfo().Assembly };
-        var rules = new ConventionBuilder();
-        rules.ForTypesDerivedFrom<ChildService>()
-            .Export<ChildService>().Shared();
         var configuration = new ContainerConfiguration()
-           .WithAssembly(typeof(Program).GetTypeInfo().Assembly, rules);
+           .WithAssembly(typeof(Program).GetTypeInfo().Assembly);
         return configuration.CreateContainer();
     }
 
@@ -71,7 +68,7 @@ class Program
         }
     }
 
-    [Export(typeof(IChildService))]
+    [Export(typeof(IChildService)), Shared]
     internal class ChildService : IChildService
     {
         Options _option;
