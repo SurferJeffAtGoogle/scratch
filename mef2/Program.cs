@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Composition.Convention;
 using System.Composition.Hosting;
 using System.Reflection;
 
@@ -28,16 +29,20 @@ class Program
 
     public void Run()
     {
-        CreateCompositionContainer().GetExport<IParentService>().DoSomething();
+        var host = CreateCompositionContainer();
+        host.GetExport<IParentService>().DoSomething();
+        host.GetExport<IParentService>().DoSomething();
     }
 
     private static CompositionHost CreateCompositionContainer()
     {
         var assemblies = new[] { typeof(Program).GetTypeInfo().Assembly };
+        var rules = new ConventionBuilder();
+        rules.ForTypesDerivedFrom<ChildService>()
+            .Export<ChildService>().Shared();
         var configuration = new ContainerConfiguration()
-           .WithAssembly(typeof(Program).GetTypeInfo().Assembly);
+           .WithAssembly(typeof(Program).GetTypeInfo().Assembly, rules);
         return configuration.CreateContainer();
-
     }
 
     public interface IParentService
