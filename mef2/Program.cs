@@ -58,10 +58,11 @@ class Program
         public ParentService([Import] Options options, IChildService secondSender)
         {
             _option = options;
+            Console.WriteLine("Parent Service constructed.");
         }
         public void DoSomething()
         {
-            Console.WriteLine("Parent Service !!");
+            Console.WriteLine("Parent Service is doing something!!");
         }
     }
 
@@ -73,10 +74,11 @@ class Program
         public ChildService([Import] Options options)
         {
             _option = options;
+            Console.WriteLine("Child Service constructed.");
         }
         public void DoSomething()
         {
-            Console.WriteLine("Child Service !!!");
+            Console.WriteLine("Child Service is doing something!!!");
         }
     }
 
