@@ -16,7 +16,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Google.Cloud.Kms.V1;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -45,6 +47,15 @@ namespace GuessWord
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+
+            // Configure Data Protection to store keys in Google Cloud Storage, encrypted using Google Cloud KMS.
+            // These keys are then used to provide anti-forgery tokens which are consistent across servers.
+            var storageOptions = Configuration.GetSection("GoogleCloudStorageOptions").Get<GoogleCloudStorageOptions>();
+            var kmsOptions = Configuration.GetSection("GoogleCloudKmsOptions").Get<GoogleCloudKmsOptions>();
+            services.AddDataProtection()
+                .PersistKeysToGoogleCloudStorage(storageOptions.Bucket, storageOptions.Object)
+                .ProtectKeysWithGoogleKms(kmsOptions.KeyNameAsCryptoKeyName);
+            services.AddAntiforgery();
 
             services.Configure<Models.SecretWordOptions>(
                 Configuration.GetSection("SecretWord"));
