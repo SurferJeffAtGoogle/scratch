@@ -12,17 +12,17 @@
 // License for the specific language governing permissions and limitations under
 // the License.
 
-using Google.Cloud.Kms.V1;
-
 namespace GuessWord
 {
-    public class GoogleCloudKmsOptions
+    /// <summary>
+    /// Options loaded from appsettings.json for configuring data protection.
+    /// This class isn't strictly necessary - it just means you only need a single call
+    /// accessing the Configuration to fetch all the values.
+    /// </summary>
+    public class DataProtectionOptions
     {
-        public string KeyName { get; set; }
-        public CryptoKeyName KeyNameAsCryptoKeyName
-        {
-            get => KeyName == null ? null : CryptoKeyName.Parse(KeyName);
-            set => KeyName = value?.ToString();
-        }
+        public string Bucket { get; set; }
+        public string Object { get; set; }
+        public string KmsKeyName { get; set; }
     }
 }
