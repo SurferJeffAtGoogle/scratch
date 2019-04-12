@@ -12,14 +12,10 @@
 // License for the specific language governing permissions and limitations under
 // the License.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +41,19 @@ namespace GuessWord
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+
+            // If you need a custom credential, it can be added to dependency injection like this.
+            // It's then picked up automatically by the configuration methods.
+            // services.AddSingleton(GoogleCredential.FromFile(...));
+
+            // Configure Data Protection to store keys in Google Cloud Storage, encrypted using Google Cloud KMS.
+            // These keys are then used to provide anti-forgery tokens which are consistent across servers.
+            var dpOptions = Configuration.GetSection("DataProtectionOptions").Get<DataProtectionOptions>();
+            services.AddDataProtection()
+                .PersistKeysToGoogleCloudStorage(dpOptions.Bucket, dpOptions.Object)
+                .ProtectKeysWithGoogleKms(dpOptions.KmsKeyName);
+
+            services.AddAntiforgery();
 
             services.Configure<Models.SecretWordOptions>(
                 Configuration.GetSection("SecretWord"));
