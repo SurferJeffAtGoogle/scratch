@@ -1,31 +1,69 @@
 
+Param([switch]$GetRepos, $Shard)
+
 function Get-Repos() {
     $org = Invoke-RestMethod -Uri https://api.github.com/orgs/googleapis
     Invoke-RestMethod -Uri $org.repos_url
 }
 
-function Write-RepoShards([Parameter(Mandatory=$true, ValueFromPipeline=$true)]$repos, $ShardCount=8) {
+$repoShardFileFormat = "repos-{0:d4}.json"
+function Write-RepoShards([Parameter(Mandatory=$true, ValueFromPipeline=$true)]$repos, $shardCount=8) {
     $repoCount = $repos.Length
     $prevShardEnd = -1
-    for ($shard = 1; $shard -le $ShardCount; $shard += 1) {
+    for ($shardNumber = 1; $shardNumber -le $shardCount; $shardNumber += 1) {
         $shardBegin = $prevShardEnd + 1
-        $shardEnd = [math]::floor($shard / $ShardCount * $repoCount) -1
+        $shardEnd = [math]::floor($shardNumber / $shardCount * $repoCount) - 1
         $reposJson = $repos[$shardBegin..$shardEnd] | ConvertTo-Json
-        Set-Content -Path ("repos-{0:d4}" -f $shard) -Value $reposJson
+        Set-Content -Path ($repoShardFileFormat -f $shardNumber) -Value $reposJson
         $prevShardEnd = $shardEnd
     }
 }
 
-Get-Repos | Write-RepoShards
-# foreach ($repo in $repos) {
-#     git clone $repo.clone_url
-#     pushd .
-#     try {
-#         cd $repo.name
-#         git log '-GcomputeMetadata[/\]+v1beta' --all -p > ../$($repo.name).log
-#     }
-#     finally {
-#         popd
-#     }
-#     break
-# }
+function Search-Repo($repoName, $outputDir) {
+    Push-Location
+    try {
+        Set-Location $repoName
+        git log '-GcomputeMetadata[/\]+v1beta' --all -p > `
+            (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta1.log")
+        git log '-ScomputeMetadata' --all -p > `
+            (Join-Path $outputDir "$($repoName)-computeMetadata-all.log")
+    }
+    finally {
+        Pop-Location
+    }    
+}
+
+function Clone-Repo($repoCloneUrl, $repoName) {
+    Push-Location
+    try {
+        if (Test-Path -Path $repoName) {
+            Set-Location $repoName
+            git checkout master
+            git pull
+        } else {
+            git clone $repoCloneUrl
+        }
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+if ($GetRepos) {
+    Get-Repos | Write-RepoShards
+}
+
+if ($Shard) {
+    $repos = Get-Content ($repoShardFileFormat -f $Shard) | ConvertFrom-Json
+    $outputDir = if (Test-Path SearchResults) {
+        Get-Item SearchResults
+    } else {
+        mkdir SearchResults
+    }
+    foreach ($repo in $repos) {
+        "Cloning $($repo.name)..." | Write-Host
+        Clone-Repo $repo.clone_url $repo.name
+        "Searching $($repo.name)..." | Write-Host
+        Search-Repo $repo.name $outputDir
+    }
+}
