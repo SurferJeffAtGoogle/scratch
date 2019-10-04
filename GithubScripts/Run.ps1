@@ -3,18 +3,23 @@ Param([switch]$GetRepos, [int]$Shard)
 
 function Get-Repos() {
     $org = Invoke-RestMethod -Uri https://api.github.com/orgs/googleapis
-    Invoke-RestMethod -Uri $org.repos_url
+    $repos = Invoke-RestMethod -FollowRelLink -Uri $org.repos_url
+    # Flatten the array.
+    $result = $repos | % {$_}
+    $result
 }
 
 $repoShardFileFormat = "repos-{0:d4}.json"
-function Write-RepoShards([Parameter(Mandatory=$true, ValueFromPipeline=$true)]$repos, $shardCount=8) {
+function Write-RepoShards([Parameter(Mandatory=$true)]$repos, $shardCount=16) {
     $repoCount = $repos.Length
     $prevShardEnd = -1
     for ($shardNumber = 1; $shardNumber -le $shardCount; $shardNumber += 1) {
         $shardBegin = $prevShardEnd + 1
         $shardEnd = [math]::floor($shardNumber / $shardCount * $repoCount) - 1
-        $reposJson = $repos[$shardBegin..$shardEnd] | ConvertTo-Json
-        Set-Content -Path ($repoShardFileFormat -f $shardNumber) -Value $reposJson
+        $reposSlice = $repos[$shardBegin..$shardEnd]
+        $outPath = ($repoShardFileFormat -f $shardNumber)
+        "Writing $($reposSlice.name -Join ',') to $outPath"
+        Set-Content -Path $outPath -Value ($reposJson | ConvertTo-Json)
         $prevShardEnd = $shardEnd
     }
 }
@@ -57,7 +62,7 @@ function Clone-Repo($repoCloneUrl, $repoName, $clonesDir) {
 }
 
 if ($GetRepos) {
-    Get-Repos | Write-RepoShards
+    Write-RepoShards (Get-Repos)
 }
 
 if ($Shard) {
