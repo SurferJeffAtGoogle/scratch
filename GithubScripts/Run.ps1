@@ -30,10 +30,12 @@ function Search-Repo($repoDir, $outputDir) {
     Push-Location
     try {
         Set-Location $repoDir
-        git log '-ScomputeMetadata[/\]+v1beta' --pickaxe-regex --all -p > `
-            (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta.log")
-        git log '-ScomputeMetadata' --all -p > `
-            (Join-Path $outputDir "$($repoName)-computeMetadata-all.log")
+        git log '-S0.1[/\]+meta-data' --pickaxe-regex --all -p > `
+            (Join-Path $outputDir "$($repoName)-0.1-metadata.log")
+        # git log '-ScomputeMetadata[/\]+v1beta' --pickaxe-regex --all -p > `
+        #     (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta.log")
+        # git log '-ScomputeMetadata' --all -p > `
+        #     (Join-Path $outputDir "$($repoName)-computeMetadata-all.log")
     }
     finally {
         Pop-Location
