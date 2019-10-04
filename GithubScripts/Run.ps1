@@ -20,7 +20,7 @@ function Write-RepoShards([Parameter(Mandatory=$true, ValueFromPipeline=$true)]$
 }
 
 function Search-Repo($repoDir, $outputDir) {
-    $repoName = Split-Path $repoDir
+    $repoName = Split-Path -Leaf $repoDir
     Push-Location
     try {
         Set-Location $repoDir
