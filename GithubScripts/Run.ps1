@@ -30,7 +30,7 @@ function Search-Repo($repoDir, $outputDir) {
     try {
         Set-Location $repoDir
         git log '-S0.1[/\]+meta-data' --pickaxe-regex --all -p > `
-            (Join-Path $outputDir "$($repoName)-0.1-metadata.log")
+            (Join-Path $outputDir "$($repoName)-0.1-meta-data.log")
         git log '-ScomputeMetadata[/\]+v1beta' --pickaxe-regex --all -p > `
             (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta.log")
         git log '-ScomputeMetadata' --all -p > `
