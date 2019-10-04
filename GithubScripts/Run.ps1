@@ -1,5 +1,5 @@
 
-Param([switch]$GetRepos, [int]$Shard)
+Param([switch]$GetRepos, [switch]$AllShards, [int]$Shard, [string]$ShardFile)
 
 function Get-Repos() {
     $org = Invoke-RestMethod -Uri https://api.github.com/orgs/googleapis
@@ -10,6 +10,7 @@ function Get-Repos() {
 }
 
 $repoShardFileFormat = "repos-{0:d4}.json"
+$repoShardFileMask = "repos-*.json"
 function Write-RepoShards([Parameter(Mandatory=$true)]$repos, $shardCount=16) {
     $repoCount = $repos.Length
     $prevShardEnd = -1
@@ -19,7 +20,7 @@ function Write-RepoShards([Parameter(Mandatory=$true)]$repos, $shardCount=16) {
         $reposSlice = $repos[$shardBegin..$shardEnd]
         $outPath = ($repoShardFileFormat -f $shardNumber)
         "Writing $($reposSlice.name -Join ',') to $outPath"
-        Set-Content -Path $outPath -Value ($reposJson | ConvertTo-Json)
+        Set-Content -Path $outPath -Value ($reposSlice | ConvertTo-Json)
         $prevShardEnd = $shardEnd
     }
 }
@@ -36,7 +37,7 @@ function Search-Repo($repoDir, $outputDir) {
     }
     finally {
         Pop-Location
-    }    
+    }
 }
 
 function Clone-Repo($repoCloneUrl, $repoName, $clonesDir) {
@@ -61,21 +62,46 @@ function Clone-Repo($repoCloneUrl, $repoName, $clonesDir) {
     }
 }
 
-if ($GetRepos) {
-    Write-RepoShards (Get-Repos)
-}
-
-if ($Shard) {
-    $repos = Get-Content ($repoShardFileFormat -f $Shard) | ConvertFrom-Json
-    $outputDir = if (Test-Path SearchResults) {
+function Get-OutputDir() {
+    if (Test-Path SearchResults) {
         Get-Item SearchResults
     } else {
         New-Item -ItemType "directory" SearchResults
     }
+}
+
+function Search-Repos($repos, $outputDir) {
     foreach ($repo in $repos) {
         "Cloning $($repo.name)..." | Write-Host
         Clone-Repo $repo.clone_url $repo.name "Clones"
         "Searching $($repo.name)..." | Write-Host
         Search-Repo (Join-Path "Clones" $repo.name) $outputDir
     }
+}
+
+if ($GetRepos) {
+    Write-RepoShards (Get-Repos)
+}
+
+if ($AllShards) {
+    $files = Get-ChildItem -Filter $repoShardFileMask
+    $jobs = foreach ($file in $files) {
+        "Starting $file..." | Write-Host 
+        Start-Job -FilePath "Run.ps1" -ArgumentList $null,"$file"
+    }
+    foreach ($job in $jobs) {
+        Receive-Job -Job $job -Wait
+        Remove-Job -Job $job
+    }
+}
+
+if ($ShardFile) {
+    "Shard file: $ShardFile" | Write-Host
+    $repos = Get-Content $ShardFile | ConvertFrom-Json
+    Search-Repos $repos (Get-OutputDir)
+}
+
+if ($ShardNumber) {
+    $repos = Get-Content ($repoShardFileFormat -f $ShardNumber) | ConvertFrom-Json
+    Search-Repos $repos (Get-OutputDir)
 }
