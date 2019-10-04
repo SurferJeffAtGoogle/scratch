@@ -19,10 +19,11 @@ function Write-RepoShards([Parameter(Mandatory=$true, ValueFromPipeline=$true)]$
     }
 }
 
-function Search-Repo($repoName, $outputDir) {
+function Search-Repo($repoDir, $outputDir) {
+    $repoName = Split-Path $repoDir
     Push-Location
     try {
-        Set-Location $repoName
+        Set-Location $repoDir
         git log '-GcomputeMetadata[/\]+v1beta' --all -p > `
             (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta1.log")
         git log '-ScomputeMetadata' --all -p > `
@@ -33,9 +34,15 @@ function Search-Repo($repoName, $outputDir) {
     }    
 }
 
-function Clone-Repo($repoCloneUrl, $repoName) {
+function Clone-Repo($repoCloneUrl, $repoName, $clonesDir) {
     Push-Location
     try {
+        $clonesDir = if (Test-Path $clonesDir) {
+            Get-Item $clonesDir
+        } else {
+            mkdir $clonesDir
+        }
+        Set-Location $clonesDir
         if (Test-Path -Path $repoName) {
             Set-Location $repoName
             git checkout master
@@ -62,8 +69,8 @@ if ($Shard) {
     }
     foreach ($repo in $repos) {
         "Cloning $($repo.name)..." | Write-Host
-        Clone-Repo $repo.clone_url $repo.name
+        Clone-Repo $repo.clone_url $repo.name "Clones"
         "Searching $($repo.name)..." | Write-Host
-        Search-Repo $repo.name $outputDir
+        Search-Repo (Join-Path "Clones" $repo.name) $outputDir
     }
 }
