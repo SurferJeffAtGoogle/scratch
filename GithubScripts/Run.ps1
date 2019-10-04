@@ -1,5 +1,5 @@
 
-Param([switch]$GetRepos, [switch]$AllShards, [int]$Shard, [string]$ShardFile)
+Param([switch]$GetRepos, [switch]$AllShards, [int]$Shard, [string]$ShardFile, [string]$WorkingDir)
 
 function Get-Repos() {
     $org = Invoke-RestMethod -Uri https://api.github.com/orgs/googleapis
@@ -79,6 +79,10 @@ function Search-Repos($repos, $outputDir) {
     }
 }
 
+if ($WorkingDir) {
+    Set-Location $WorkingDir
+}
+
 if ($GetRepos) {
     Write-RepoShards (Get-Repos)
 }
@@ -87,7 +91,7 @@ if ($AllShards) {
     $files = Get-ChildItem -Filter $repoShardFileMask
     $jobs = foreach ($file in $files) {
         "Starting $file..." | Write-Host 
-        Start-Job -FilePath "Run.ps1" -ArgumentList $null,"$file"
+        Start-Job -FilePath "Run.ps1" -ArgumentList $null,"$file",(Get-Location)
     }
     foreach ($job in $jobs) {
         Receive-Job -Job $job -Wait
