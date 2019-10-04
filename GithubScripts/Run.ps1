@@ -25,7 +25,7 @@ function Search-Repo($repoDir, $outputDir) {
     try {
         Set-Location $repoDir
         git log '-GcomputeMetadata[/\]+v1beta' --all -p > `
-            (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta1.log")
+            (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta.log")
         git log '-ScomputeMetadata' --all -p > `
             (Join-Path $outputDir "$($repoName)-computeMetadata-all.log")
     }
