@@ -1,5 +1,5 @@
 
-Param([switch]$GetRepos, $Shard)
+Param([switch]$GetRepos, [int]$Shard)
 
 function Get-Repos() {
     $org = Invoke-RestMethod -Uri https://api.github.com/orgs/googleapis
