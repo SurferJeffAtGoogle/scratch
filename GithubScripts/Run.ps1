@@ -1,7 +1,7 @@
 Param([switch]$GetRepos, [switch]$AllShards, [int]$Shard, [string]$ShardFile, [string]$WorkingDir)
 
 function Get-Repos() {
-    $org = Invoke-RestMethod -Uri https://api.github.com/orgs/googleapis
+    $org = Invoke-RestMethod -Uri https://api.github.com/orgs/google
     $repos = Invoke-RestMethod -FollowRelLink -Uri $org.repos_url
     # Flatten the array.
     $result = $repos | % {$_}
@@ -29,12 +29,8 @@ function Search-Repo($repoDir, $outputDir) {
     Push-Location
     try {
         Set-Location $repoDir
-        git log '-S0.1[/\]+meta-data' --pickaxe-regex --all -p > `
-            (Join-Path $outputDir "$($repoName)-0.1-meta-data.log")
-        git log '-ScomputeMetadata[/\]+v1beta' --pickaxe-regex --all -p > `
-            (Join-Path $outputDir "$($repoName)-computeMetadata-v1beta.log")
-        git log '-ScomputeMetadata' --all -p > `
-            (Join-Path $outputDir "$($repoName)-computeMetadata-all.log")
+        git log '-S(0.1[/\]+meta-data)|(computeMetadata[/\]+v1beta)' --pickaxe-regex --all -p > `
+            (Join-Path $outputDir "$($repoName).log")
     }
     finally {
         Pop-Location
