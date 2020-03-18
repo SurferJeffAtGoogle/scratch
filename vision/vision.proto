@@ -9,5 +9,11 @@ message Page {
 
   // Page height. For PDFs the unit is points. For images (including
   // TIFFs) the unit is pixels.
-  int32 height = 3;  
+  int32 height = 3;
+
+  // List of blocks of text, images etc on this page.
+  repeated Block blocks = 4;
+
+  // Confidence of the OCR results on the page. Range [0, 1].
+  float confidence = 5;  
 }
