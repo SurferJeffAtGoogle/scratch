@@ -9,7 +9,7 @@ namespace PubsubTest
         public void Test1()
         {
             var spellChecker = SpellCheckerService.CreateClient();
-            var dictionary = spellChecker.CreateDictionary("my-dictionary");
+            var dictionary = spellChecker.CreateDictionary(Guid.NewGuid().ToString());
             Assert.Empty(dictionary);
             dictionary.AddWord("Jeff");
             Assert.Contains("Jeff", dictionary);            
