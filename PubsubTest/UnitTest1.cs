@@ -11,10 +11,14 @@ public void Test1()
     var spellChecker = SpellCheckerService.CreateClient();
     var dictionary = spellChecker.CreateDictionary(
         Guid.NewGuid().ToString());
-    Assert.Empty(dictionary);
-    dictionary.AddWord("Jeff");
-    Assert.Contains("Jeff", dictionary);
-    spellChecker.DeleteDictionary(dictionary);
+    try {
+        Assert.Empty(dictionary);
+        dictionary.AddWord("Jeff");
+        Assert.Contains("Jeff", dictionary);
+    } finally {
+        spellChecker.DeleteDictionary(dictionary);
+    }
 }
+
     }
 }
