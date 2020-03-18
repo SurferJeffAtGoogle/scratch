@@ -9,14 +9,17 @@ namespace PubsubTest
 public void Test1()
 {
     var spellChecker = SpellCheckerService.CreateClient();
-    var dictionary = spellChecker.CreateDictionary(
-        Guid.NewGuid().ToString());
+    var adictionary = spellChecker.CreateDictionary(
+        "test-" + Guid.NewGuid().ToString());
+    var bdictionary = spellChecker.CreateDictionary(
+        "test-" + Guid.NewGuid().ToString());
     try {
-        Assert.Empty(dictionary);
-        dictionary.AddWord("Jeff");
-        Assert.Contains("Jeff", dictionary);
+        Assert.Empty(adictionary);
+        adictionary.AddWord("Jeff");
+        Assert.Contains("Jeff", adictionary);
     } finally {
-        spellChecker.DeleteDictionary(dictionary);
+        spellChecker.DeleteDictionary(adictionary);
+        spellChecker.DeleteDictionary(bdictionary);
     }
 }
 
