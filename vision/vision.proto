@@ -1,0 +1,11 @@
+// Detected page from OCR.
+message Page {
+  // Additional information detected on the page.
+  TextAnnotation.TextProperty property = 1;
+
+  // Page width.
+  int32 width = 2;
+
+  // Page height.
+  int32 height = 3;
+}
