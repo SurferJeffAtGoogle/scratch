@@ -1,7 +1,8 @@
-Param([switch]$GetRepos, [switch]$AllShards, [int]$Shard, [string]$ShardFile, [string]$WorkingDir)
+Param([switch]$GetRepos, [switch]$AllShards, [int]$Shard, [string]$ShardFile, 
+    [string]$WorkingDir, [string]$OrgName, [switch]$CloneRepos)
 
 function Get-Repos() {
-    $org = Invoke-RestMethod -Uri https://api.github.com/orgs/google
+    $org = Invoke-RestMethod -Uri https://api.github.com/orgs/$OrgName
     $repos = Invoke-RestMethod -FollowRelLink -Uri $org.repos_url
     # Flatten the array.
     $result = $repos | % {$_}
@@ -72,12 +73,15 @@ function Search-Repos($repos, $outputDir) {
         "Cloning $($repo.name)..." | Write-Host
         Clone-Repo $repo.clone_url $repo.name "Clones"
         "Searching $($repo.name)..." | Write-Host
-        Search-Repo (Join-Path "Clones" $repo.name) $outputDir
+        # Search-Repo (Join-Path "Clones" $repo.name) $outputDir
     }
 }
 
 if ($WorkingDir) {
     Set-Location $WorkingDir
+} elseif ($OrgName) {
+    New-Item -ItemType Directory -Force -Path $OrgName   
+    Set-Location $OrgName
 }
 
 if ($GetRepos) {
@@ -88,7 +92,7 @@ if ($AllShards) {
     $files = Get-ChildItem -Filter $repoShardFileMask
     $jobs = foreach ($file in $files) {
         "Starting $file..." | Write-Host 
-        Start-Job -FilePath "Run.ps1" -ArgumentList $null,"$file",(Get-Location)
+        Start-Job -FilePath $PSCommandPath -ArgumentList $null,"$file",(Get-Location)
     }
     foreach ($job in $jobs) {
         Receive-Job -Job $job -Wait
