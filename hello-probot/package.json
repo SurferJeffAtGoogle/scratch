@@ -1,0 +1,42 @@
+{
+  "name": "surferjeff-hello-probot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "My first probot app",
+  "author": "Jeffrey Rennie <rennie@google.com>",
+  "license": "ISC",
+  "repository": "https://github.com/SurferJeffAtGoogle/surferjeff-hello-probot.git",
+  "homepage": "https://github.com/SurferJeffAtGoogle/surferjeff-hello-probot",
+  "bugs": "https://github.com/SurferJeffAtGoogle/surferjeff-hello-probot/issues",
+  "keywords": [
+    "probot",
+    "github",
+    "probot-app"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "probot run ./lib/index.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "probot": "^10.9.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.9",
+    "@types/node": "^14.0.27",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
+    "@typescript-eslint/parser": "^4.6.0",
+    "eslint": "^7.12.1",
+    "jest": "^26.4.0",
+    "nock": "^13.0.4",
+    "smee-client": "^1.1.0",
+    "ts-jest": "^26.2.0",
+    "typescript": "^3.9.7"
+  },
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}
