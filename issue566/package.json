@@ -1,0 +1,42 @@
+{
+  "name": "@google-cloud/monitoring566",
+  "description": "Stackdriver Monitoring API client for Node.js",
+  "engines": {
+    "node": ">=10"
+  },
+  "main": "build/src/index.js",
+  "files": [
+    "build/src",
+    "build/protos"
+  ],
+  "scripts": {
+    "lint": "gts check",
+    "test": "c8 mocha build/test",
+    "fix": "gts fix",
+    "prelint": "cd samples; npm link ../; npm install",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "prepare": "npm run compile",
+    "precompile": "gts clean"
+  },
+  "dependencies": {
+    "google-gax": "^2.17.1"
+  },
+  "devDependencies": {
+    "@types/mocha": "^8.0.0",
+    "@types/node": "^14.0.0",
+    "@types/sinon": "^10.0.0",
+    "c8": "^7.1.0",
+    "codecov": "^3.6.5",
+    "gts": "^2.0.0",
+    "linkinator": "^2.0.0",
+    "mocha": "^8.0.0",
+    "null-loader": "^4.0.0",
+    "pack-n-play": "^1.0.0-2",
+    "sinon": "^11.0.0",
+    "ts-loader": "^9.0.0",
+    "typescript": "^3.8.3",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0"
+  }
+}
