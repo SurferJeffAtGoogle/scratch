@@ -19,7 +19,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "probot": "^10.9.5"
+    "probot": "^12.2.9"
   },
   "devDependencies": {
     "@types/jest": "^26.0.9",
